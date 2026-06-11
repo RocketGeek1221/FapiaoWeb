@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDI0IDEwMjQiPjxwYXRoIGZpbGw9IiM0QjlBRkMiIGQ9Ik03NjggMTAyNEgyNTZDMTEyLjY0IDEwMjQgMCA5MTEuMzYgMCA3NjhWMjU2QzAgMTEyLjY0IDExMi42NCAwIDI1NiAwaDUxMmMxNDMuMzYgMCAyNTYgMTEyLjY0IDI1NiAyNTZ2NTEyYzAgMTQzLjM2LTExMi42NCAyNTYtMjU2IDI1Nm0xMDIuNC03NjhjMC01Ni4zMi00Ni4wOC0xMDIuNC0xMDIuNC0xMDIuNEgyNTZjLTU2LjMyIDAtMTAyLjQgNDYuMDgtMTAyLjQgMTAyLjR2NjE0LjRMMjUwLjg4IDc2OGw0Ni4wOCAxMDIuNEwzOTQuMjQgNzY4bDQ2LjA4IDEwMi40TDUzNy42IDc2OGw0Ni4wOCAxMDIuNEw2ODAuOTYgNzY4bDQ2LjA4IDEwMi40TDgyNC4zMiA3NjhsNDYuMDggMTAyLjR6bS0xMjggMjA0LjhIMjgxLjZjLTE1LjM2IDAtMjUuNi0xMC4yNC0yNS42LTI1LjZzMTAuMjQtMjUuNiAyNS42LTI1LjZoNDYwLjhjMTUuMzYgMCAyNS42IDEwLjAyNS42IDI1LjZzLTEwLjI0IDI1LjYtMjUuNiAyNS42bTAtMTUzLjZIMjgxLjZjLTE1LjM2IDAtMjUuNi0xMC4yNC0yNS42LTI1LjZzMTAuMjQtMjUuNiAyNS42LTI1LjZoNDYwLjhjMTUuMzYgMCAyNS42IDEwLjI0IDI1LjYgMjUuNnMtMTAuMjQgMjUuNi0yNS42IDI1LjYiLz48L3N2Zz4=">
+    <title>发票解析调试工具</title>
+    <meta name="description" content="调试增值税发票PDF解析逻辑，查看文本坐标与提取结果">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <!-- PDF.js -->
+    <script src="https://s4.zstatic.net/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="../static/components/common.css">
+    <style>
+        .page-title { margin-bottom: 0; }
+
+        /* 上传区域 */
+        .debug-upload {
+            background: var(--color-surface);
+            border: 2px dashed var(--color-border);
+            border-radius: var(--radius-lg);
+            padding: var(--space-10);
+            text-align: center;
+            cursor: pointer;
+            transition: border-color var(--transition-fast);
+            margin-bottom: var(--space-6);
+        }
+        .debug-upload:hover, .debug-upload.dragover {
+            border-color: var(--color-brand);
+        }
+        .debug-upload input { display: none; }
+        .debug-upload p { margin: var(--space-2) 0; color: var(--color-text-secondary); }
+
+        /* 调试面板 */
+        .debug-panel {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--space-6);
+            overflow: hidden;
+        }
+        .debug-panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--space-4) var(--space-6);
+            background: var(--color-bg);
+            border-bottom: 1px solid var(--color-border);
+            cursor: pointer;
+            user-select: none;
+        }
+        .debug-panel-header h3 {
+            font-size: var(--font-size-base);
+            font-weight: var(--font-weight-semibold);
+            margin: 0;
+        }
+        .debug-panel-header .badge {
+            font-size: var(--font-size-xs);
+            padding: 2px 8px;
+            border-radius: var(--radius-full);
+            margin-left: var(--space-2);
+        }
+        .badge-success { background: #dcfce7; color: #166534; }
+        .badge-warn { background: #fef3c7; color: #92400e; }
+        .badge-error { background: #fee2e2; color: #991b1b; }
+        .badge-info { background: #dbeafe; color: #1e40af; }
+        .debug-panel-body { padding: var(--space-4) var(--space-6); }
+        .debug-panel-body.collapsed { display: none; }
+
+        /* 坐标可视化画布 */
+        .canvas-wrapper {
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            overflow: auto;
+            max-height: 500px;
+            background: #fff;
+        }
+        .canvas-wrapper canvas { display: block; }
+
+        /* 文本项表格 */
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: var(--font-size-sm);
+        }
+        .items-table th, .items-table td {
+            padding: 6px 10px;
+            border-bottom: 1px solid var(--color-border-light);
+            text-align: left;
+            white-space: nowrap;
+        }
+        .items-table th {
+            background: var(--color-bg);
+            font-weight: var(--font-weight-medium);
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+        .items-table tr:hover { background: var(--color-bg); }
+        .items-table .text-cell {
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-family: 'Courier New', monospace;
+        }
+        .table-scroll {
+            max-height: 400px;
+            overflow: auto;
+            border: 1px solid var(--color-border-light);
+            border-radius: var(--radius-md);
+        }
+
+        /* 解析结果 */
+        .result-grid {
+            display: grid;
+            grid-template-columns: 140px 1fr auto;
+            gap: 0;
+            font-size: var(--font-size-sm);
+        }
+        .result-grid .result-row {
+            display: contents;
+        }
+        .result-grid .result-label {
+            padding: 8px 12px;
+            font-weight: var(--font-weight-medium);
+            border-bottom: 1px solid var(--color-border-light);
+            background: var(--color-bg);
+        }
+        .result-grid .result-value {
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--color-border-light);
+            font-family: 'Courier New', monospace;
+            word-break: break-all;
+        }
+        .result-grid .result-value.empty {
+            color: var(--color-text-secondary);
+            font-style: italic;
+        }
+        .result-grid .result-status {
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--color-border-light);
+            text-align: center;
+        }
+        .status-ok { color: #16a34a; }
+        .status-missing { color: #dc2626; }
+
+        /* 工具按钮 */
+        .debug-toolbar {
+            display: flex;
+            gap: var(--space-3);
+            margin-bottom: var(--space-4);
+            flex-wrap: wrap;
+        }
+        .debug-toolbar .btn {
+            font-size: var(--font-size-sm);
+        }
+
+        /* 搜索过滤 */
+        .filter-input {
+            padding: 6px 12px;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            font-size: var(--font-size-sm);
+            width: 200px;
+        }
+        .filter-input:focus { outline: none; border-color: var(--color-brand); }
+
+        /* 日志 */
+        .debug-log {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: var(--space-4);
+            border-radius: var(--radius-md);
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.6;
+            max-height: 300px;
+            overflow: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .debug-log .log-warn { color: #fbbf24; }
+        .debug-log .log-error { color: #f87171; }
+        .debug-log .log-success { color: #34d399; }
+
+        /* 高亮匹配行 */
+        .items-table tr.highlight { background: #fef3c7; }
+
+        /* 对比面板 */
+        .compare-panel {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-4);
+        }
+        @media (max-width: 768px) {
+            .compare-panel { grid-template-columns: 1fr; }
+            .result-grid { grid-template-columns: 120px 1fr auto; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <!-- 公共 Header -->
+        <div id="header-container"></div>
+        <script>
+            (function() {
+                try {
+                    const cachedHeader = sessionStorage.getItem('shared-component-cache:components/header.html');
+                    const container = document.getElementById('header-container');
+                    if (cachedHeader && container) {
+                        container.innerHTML = cachedHeader;
+                        container.__componentMarkup = cachedHeader;
+                        container.__componentInitialized = false;
+                    }
+                } catch (error) {}
+            })();
+        </script>
+
+        <!-- Page Title -->
+        <section class="page-title">
+            <div class="container">
+                <h1 class="page-heading">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        <line x1="11" y1="8" x2="11" y2="14"></line>
+                        <line x1="8" y1="11" x2="14" y2="11"></line>
+                    </svg>
+                    发票解析调试
+                </h1>
+                <p class="subtitle">上传PDF查看文本坐标、解析中间步骤与最终结果（仅增值税发票）</p>
+            </div>
+        </section>
+
+        <!-- Main Content -->
+        <main class="main">
+            <div class="container">
+                <!-- Upload -->
+                <section class="debug-upload" id="uploadArea">
+                    <input type="file" id="fileInput" accept=".pdf">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--color-brand)">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                    </svg>
+                    <p style="font-weight:500;color:var(--color-text-primary)">点击或拖拽PDF文件</p>
+                    <p>仅支持单个文件调试</p>
+                </section>
+
+                <!-- 文件信息 -->
+                <div id="fileInfoBar" style="display:none;margin-bottom:var(--space-4);padding:var(--space-3) var(--space-4);background:var(--color-surface);border-radius:var(--radius-md);border:1px solid var(--color-border);font-size:var(--font-size-sm);align-items:center;gap:var(--space-3);">
+                </div>
+
+                <!-- 检测结果 -->
+                <div class="debug-panel" id="detectPanel" style="display:none">
+                    <div class="debug-panel-header" onclick="togglePanel('detectBody')">
+                        <h3>1. 发票类型检测</h3>
+                        <span id="detectBadge" class="badge badge-info">-</span>
+                    </div>
+                    <div class="debug-panel-body" id="detectBody">
+                        <div id="detectContent"></div>
+                    </div>
+                </div>
+
+                <!-- 原始文本项 -->
+                <div class="debug-panel" id="rawPanel" style="display:none">
+                    <div class="debug-panel-header" onclick="togglePanel('rawBody')">
+                        <h3>2. 原始文本项 (Raw TextItems)</h3>
+                        <span id="rawBadge" class="badge badge-info">0</span>
+                    </div>
+                    <div class="debug-panel-body" id="rawBody">
+                        <div class="debug-toolbar">
+                            <input type="text" class="filter-input" id="rawFilter" placeholder="过滤文本内容..." oninput="filterTable('raw')">
+                            <button class="btn btn-secondary" onclick="exportJSON('raw')">导出 JSON</button>
+                        </div>
+                        <div class="table-scroll">
+                            <table class="items-table" id="rawTable">
+                                <thead><tr><th>#</th><th>文本</th><th>X</th><th>Y</th><th>W</th><th>H</th></tr></thead>
+                                <tbody id="rawBody_tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 合并后文本项 -->
+                <div class="debug-panel" id="mergedPanel" style="display:none">
+                    <div class="debug-panel-header" onclick="togglePanel('mergedBody')">
+                        <h3>3. 合并后文本项 (After mergeAdjacentChars)</h3>
+                        <span id="mergedBadge" class="badge badge-info">0</span>
+                    </div>
+                    <div class="debug-panel-body" id="mergedBody">
+                        <div class="debug-toolbar">
+                            <input type="text" class="filter-input" id="mergedFilter" placeholder="过滤文本内容..." oninput="filterTable('merged')">
+                            <button class="btn btn-secondary" onclick="exportJSON('merged')">导出 JSON</button>
+                        </div>
+                        <div class="table-scroll">
+                            <table class="items-table" id="mergedTable">
+                                <thead><tr><th>#</th><th>文本</th><th>X</th><th>Y</th><th>W</th><th>H</th></tr></thead>
+                                <tbody id="mergedBody_tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 坐标可视化 -->
+                <div class="debug-panel" id="canvasPanel" style="display:none">
+                    <div class="debug-panel-header" onclick="togglePanel('canvasBody')">
+                        <h3>4. 坐标可视化</h3>
+                    </div>
+                    <div class="debug-panel-body" id="canvasBody">
+                        <div class="debug-toolbar">
+                            <input type="text" class="filter-input" id="canvasFilter" placeholder="高亮文本..." oninput="redrawCanvas()">
+                            <button class="btn btn-secondary" onclick="toggleCanvasMode()">切换: <span id="canvasModeLabel">原始</span></button>
+                        </div>
+                        <div class="canvas-wrapper">
+                            <canvas id="visCanvas"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 解析结果 -->
+                <div class="debug-panel" id="resultPanel" style="display:none">
+                    <div class="debug-panel-header" onclick="togglePanel('resultBody')">
+                        <h3>5. 解析结果</h3>
+                        <span id="resultBadge" class="badge badge-info">-</span>
+                    </div>
+                    <div class="debug-panel-body" id="resultBody">
+                        <div class="debug-toolbar">
+                            <button class="btn btn-secondary" onclick="exportJSON('result')">导出结果 JSON</button>
+                        </div>
+                        <div class="result-grid" id="resultGrid"></div>
+                    </div>
+                </div>
+
+                <!-- 调试日志 -->
+                <div class="debug-panel" id="logPanel" style="display:none">
+                    <div class="debug-panel-header" onclick="togglePanel('logBody')">
+                        <h3>6. 调试日志</h3>
+                    </div>
+                    <div class="debug-panel-body" id="logBody">
+                        <div class="debug-toolbar">
+                            <button class="btn btn-secondary" onclick="clearLog()">清空日志</button>
+                            <button class="btn btn-secondary" onclick="exportLog()">导出日志</button>
+                        </div>
+                        <div class="debug-log" id="debugLog"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- 公共 Footer -->
+        <div id="footer-container"></div>
+
+        <!-- Toast -->
+        <div class="toast" id="toast" role="alert" aria-live="polite">
+            <span class="toast-message" id="toastMessage"></span>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../static/tools/js/common.js"></script>
+    <script src="../static/components/site-config.js"></script>
+    <script src="../static/components/components.js"></script>
+    <script src="../static/tools/js/debug.js"></script>
+</body>
+</html>

@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDI0IDEwMjQiPjxwYXRoIGZpbGw9IiM0QjlBRkMiIGQ9Ik03NjggMTAyNEgyNTZDMTEyLjY0IDEwMjQgMCA5MTEuMzYgMCA3NjhWMjU2QzAgMTEyLjY0IDExMi42NCAwIDI1NiAwaDUxMmMxNDMuMzYgMCAyNTYgMTEyLjY0IDI1NiAyNTZ2NTEyYzAgMTQzLjM2LTExMi42NCAyNTYtMjU2IDI1Nm0xMDIuNC03NjhjMC01Ni4zMi00Ni4wOC0xMDIuNC0xMDIuNC0xMDIuNEgyNTZjLTU2LjMyIDAtMTAyLjQgNDYuMDgtMTAyLjQgMTAyLjR2NjE0LjRMMjUwLjg4IDc2OGw0Ni4wOCAxMDIuNEwzOTQuMjQgNzY4bDQ2LjA4IDEwMi40TDUzNy42IDc2OGw0Ni4wOCAxMDIuNEw2ODAuOTYgNzY4bDQ2LjA4IDEwMi40TDgyNC4zMiA3NjhsNDYuMDggMTAyLjR6bS0xMjggMjA0LjhIMjgxLjZjLTE1LjM2IDAtMjUuNi0xMC4yNC0yNS42LTI1LjZzMTAuMjQtMjUuNiAyNS42LTI1LjZoNDYwLjhjMTUuMzYgMCAyNS42IDEwLjI0IDI1LjYgMjUuNnMtMTAuMjQgMjUuNi0yNS42IDI1LjZtMC0xNTMuNkgyODEuNmMtMTUuMzYgMC0yNS42LTEwLjI0LTI1LjYtMjUuNnMxMC4yNC0yNS42IDI1LjYtMjUuNmg0NjAuOGMxNS4zNiAwIDI1LjYgMTAuMjQgMjUuNiAyNS42cy0xMC4yNCAyNS42LTI1LjYgMjUuNiIvPjwvc3ZnPg==">
+    <title>发票合并打印</title>
+    <meta name="description" content="将多张发票合并排版到A4纸上打印，支持每页2/3/4张，可导出合并后PDF">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- pdf.js -->
+    <script src="https://s4.zstatic.net/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <!-- jsPDF for PDF export -->
+    <script src="https://s4.zstatic.net/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="../static/components/common.css">
+    <link rel="stylesheet" href="../static/tools/css/print.css">
+</head>
+<body>
+    <div class="app">
+        <!-- 公共 Header -->
+        <div id="header-container"></div>
+        <script>
+            (function() {
+                try {
+                    const cachedHeader = sessionStorage.getItem('shared-component-cache:components/header.html');
+                    const container = document.getElementById('header-container');
+                    if (cachedHeader && container) {
+                        container.innerHTML = cachedHeader;
+                        container.__componentMarkup = cachedHeader;
+                        container.__componentInitialized = false;
+                    }
+                } catch (error) {}
+            })();
+        </script>
+
+        <!-- Page Title -->
+        <section class="page-title">
+            <div class="container">
+                <h1 class="page-heading">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                        <line x1="8" y1="21" x2="16" y2="21"></line>
+                        <line x1="12" y1="17" x2="12" y2="21"></line>
+                    </svg>
+                    发票合并打印
+                </h1>
+                <p class="subtitle">多张发票合并排版到A4纸，支持每页2/3/4张，可导出PDF</p>
+            </div>
+        </section>
+
+        <!-- Main Content -->
+        <main class="main">
+            <div class="container">
+                <div class="main-layout">
+                    <!-- Left Panel: Upload + Settings + File List -->
+                    <div class="left-panel">
+                        <!-- Upload Section -->
+                        <section class="upload-section">
+                            <div class="upload-card">
+                                <input type="file" id="fileInput" class="file-input" multiple accept=".pdf,.png,.jpg,.jpeg" aria-label="选择发票文件">
+                                <div class="upload-area" id="uploadArea">
+                                    <div class="upload-icon">
+                                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                            <polyline points="17 8 12 3 7 8"></polyline>
+                                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                                        </svg>
+                                    </div>
+                                    <p class="upload-text">点击或拖拽发票到此处</p>
+                                    <p class="upload-hint">支持 PDF / PNG / JPG，可批量上传</p>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Layout Settings -->
+                        <section class="settings-card">
+                            <h3 class="settings-title">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                                </svg>
+                                排版设置
+                            </h3>
+
+                            <!-- Layout Options: 1/2/3/4 per page -->
+                            <div class="layout-options">
+                                <label class="layout-option">
+                                    <input type="radio" name="perPage" value="1" class="layout-radio" checked>
+                                    <div class="layout-preview">
+                                        <div class="layout-box layout-box-single"><div class="layout-cell"></div></div>
+                                    </div>
+                                    <span class="layout-label">默认</span>
+                                </label>
+                                <label class="layout-option">
+                                    <input type="radio" name="perPage" value="2" class="layout-radio">
+                                    <div class="layout-preview">
+                                        <div class="layout-box"><div class="layout-cell"></div><div class="layout-cell"></div></div>
+                                    </div>
+                                    <span class="layout-label">每页2张</span>
+                                </label>
+                                <label class="layout-option">
+                                    <input type="radio" name="perPage" value="3" class="layout-radio">
+                                    <div class="layout-preview">
+                                        <div class="layout-box"><div class="layout-cell"></div><div class="layout-cell"></div><div class="layout-cell"></div></div>
+                                    </div>
+                                    <span class="layout-label">每页3张</span>
+                                </label>
+                                <label class="layout-option">
+                                    <input type="radio" name="perPage" value="4" class="layout-radio">
+                                    <div class="layout-preview">
+                                        <div class="layout-box layout-box-2x2"><div class="layout-cell"></div><div class="layout-cell"></div><div class="layout-cell"></div><div class="layout-cell"></div></div>
+                                    </div>
+                                    <span class="layout-label">每页4张</span>
+                                </label>
+                            </div>
+
+                            <!-- Margin -->
+                            <div class="setting-row">
+                                <label class="setting-label">页边距</label>
+                                <select id="marginSize" class="form-select">
+                                    <option value="none">无边距</option>
+                                    <option value="small">窄 (5mm)</option>
+                                    <option value="normal" selected>标准 (10mm)</option>
+                                    <option value="large">宽 (20mm)</option>
+                                </select>
+                            </div>
+
+                            <!-- Gap between invoices -->
+                            <div class="setting-row">
+                                <label class="setting-label">发票间距</label>
+                                <select id="gapSize" class="form-select">
+                                    <option value="none">无间距</option>
+                                    <option value="small">小 (3mm)</option>
+                                    <option value="normal" selected>标准 (5mm)</option>
+                                    <option value="large">大 (10mm)</option>
+                                </select>
+                            </div>
+
+                            <!-- Divider -->
+                            <div class="setting-row">
+                                <label class="setting-label">分割线</label>
+                                <label class="toggle-label">
+                                    <input type="checkbox" id="showDivider" checked>
+                                    <span>显示分割线</span>
+                                </label>
+                            </div>
+                        </section>
+
+                        <!-- File List -->
+                        <section class="file-list-section" id="fileListSection" style="display: none;">
+                            <div class="file-list-header">
+                                <h3 class="section-title">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
+                                        <polyline points="13 2 13 9 20 9"></polyline>
+                                    </svg>
+                                    发票列表
+                                    <span class="file-count" id="fileCount">0</span>
+                                </h3>
+                                <button class="btn btn-text" id="clearBtn">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="3 6 5 6 21 6"></polyline>
+                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                    </svg>
+                                    清空
+                                </button>
+                            </div>
+                            <ul class="file-items" id="fileItems"></ul>
+                        </section>
+
+                        <!-- Empty State -->
+                        <section class="empty-state" id="emptyState">
+                            <div class="empty-icon">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                                    <line x1="8" y1="21" x2="16" y2="21"></line>
+                                    <line x1="12" y1="17" x2="12" y2="21"></line>
+                                </svg>
+                            </div>
+                            <h3 class="empty-title">暂无发票</h3>
+                            <p class="empty-desc">请上传发票文件</p>
+                        </section>
+                    </div>
+
+                    <!-- Right Panel: Preview + Actions -->
+                    <div class="right-panel">
+                        <!-- Preview Section -->
+                        <section class="preview-card" id="previewCard" style="display: none;">
+                            <div class="preview-card-header">
+                                <h3 class="settings-title">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                    合并预览
+                                </h3>
+                                <div class="preview-nav-btns">
+                                    <button class="btn btn-icon-sm" id="prevPageBtn" disabled>
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                                    </button>
+                                    <span class="page-info" id="pageInfo">1 / 1</span>
+                                    <button class="btn btn-icon-sm" id="nextPageBtn" disabled>
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="preview-canvas-area" id="previewCanvasArea">
+                                <canvas id="previewCanvas"></canvas>
+                            </div>
+                            <div class="preview-stats" id="previewStats"></div>
+                        </section>
+
+                        <!-- Action Buttons -->
+                        <section class="action-buttons" id="actionButtons" style="display: none;">
+                            <button class="btn btn-primary btn-block" id="exportPdfBtn">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                                导出合并PDF
+                            </button>
+                            <button class="btn btn-success btn-block" id="printBtn">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                                    <rect x="6" y="14" width="12" height="8"></rect>
+                                </svg>
+                                打印
+                            </button>
+                        </section>
+
+                        <!-- Empty Preview State -->
+                        <section class="preview-empty-state" id="previewEmptyState">
+                            <div class="empty-icon">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                            </div>
+                            <h3 class="empty-title">合并预览</h3>
+                            <p class="empty-desc">上传发票后将在此显示合并预览</p>
+                        </section>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- 公共 Footer -->
+        <div id="footer-container"></div>
+
+        <!-- Toast -->
+        <div class="toast" id="toast" role="alert" aria-live="polite">
+            <span class="toast-message" id="toastMessage"></span>
+        </div>
+    </div>
+
+    <!-- Hidden print container -->
+    <div id="printContainer" style="display: none;"></div>
+
+    <!-- Scripts -->
+    <script src="../static/tools/js/common.js"></script>
+    <script src="../static/components/site-config.js"></script>
+    <script src="../static/components/components.js"></script>
+    <script src="../static/tools/js/print.js"></script>
+</body>
+</html>

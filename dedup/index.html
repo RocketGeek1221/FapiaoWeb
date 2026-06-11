@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDI0IDEwMjQiPjxwYXRoIGZpbGw9IiM0QjlBRkMiIGQ9Ik03NjggMTAyNEgyNTZDMTEyLjY0IDEwMjQgMCA5MTEuMzYgMCA3NjhWMjU2QzAgMTEyLjY0IDExMi42NCAwIDI1NiAwaDUxMmMxNDMuMzYgMCAyNTYgMTEyLjY0IDI1NiAyNTZ2NTEyYzAgMTQzLjM2LTExMi42NCAyNTYtMjU2IDI1Nm0xMDIuNC03NjhjMC01Ni4zMi00Ni4wOC0xMDIuNC0xMDIuNC0xMDIuNEgyNTZjLTU2LjMyIDAtMTAyLjQgNDYuMDgtMTAyLjQgMTAyLjR2NjE0LjRMMjUwLjg4IDc2OGw0Ni4wOCAxMDIuNEwzOTQuMjQgNzY4bDQ2LjA4IDEwMi40TDUzNy42IDc2OGw0Ni4wOCAxMDIuNEw2ODAuOTYgNzY4bDQ2LjA4IDEwMi40TDgyNC4zMiA3NjhsNDYuMDggMTAyLjR6bS0xMjggMjA0LjhIMjgxLjZjLTE1LjM2IDAtMjUuNi0xMC4yNC0yNS42LTI1LjZzMTAuMjQtMjUuNiAyNS42LTI1LjZoNDYwLjhjMTUuMzYgMCAyNS42IDEwLjI0IDI1LjYgMjUuNnMtMTAuMjQgMjUuNi0yNS42IDI1LjZtMC0xNTMuNkgyODEuNmMtMTUuMzYgMC0yNS42LTEwLjI0LTI1LjYtMjUuNnMxMC4yNC0yNS42IDI1LjYtMjUuNmg0NjAuOGMxNS4zNiAwIDI1LjYgMTAuMjQgMjUuNiAyNS42cy0xMC4yNCAyNS42LTI1LjYgMjUuNiIvPjwvc3ZnPg==">
+    <title>发票查重</title>
+    <meta name="description" content="批量检测重复发票，支持MD5文件查重和发票号码查重">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- pdf.js -->
+    <script src="https://s4.zstatic.net/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    
+    <!-- JSZip for batch download -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="../static/tools/css/dedup.css">
+    <link rel="stylesheet" href="../static/components/common.css">
+</head>
+<body>
+    <div class="app">
+        <!-- 公共 Header -->
+        <div id="header-container"></div>
+        <script>
+            (function() {
+                try {
+                    const cachedHeader = sessionStorage.getItem('shared-component-cache:components/header.html');
+                    const container = document.getElementById('header-container');
+                    if (cachedHeader && container) {
+                        container.innerHTML = cachedHeader;
+                        container.__componentMarkup = cachedHeader;
+                        container.__componentInitialized = false;
+                    }
+                } catch (error) {}
+            })();
+        </script>
+
+        <!-- Page Title -->
+        <section class="page-title">
+            <div class="container">
+                <h1 class="page-heading">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    发票查重
+                </h1>
+                <p class="subtitle">批量检测重复发票，支持MD5文件查重和发票号码查重</p>
+            </div>
+        </section>
+
+        <!-- Main Content -->
+        <main class="main">
+            <div class="dedup-layout container">
+                <!-- Left Panel: Upload / Settings / File List / Progress -->
+                <div class="dedup-left">
+                    <!-- Upload Section -->
+                    <section class="upload-section" id="uploadSection">
+                        <div class="upload-card">
+                            <input type="file" id="fileInput" class="file-input" multiple accept=".pdf" aria-label="选择发票PDF文件">
+                            <div class="upload-area" id="uploadArea">
+                                <div class="upload-icon">
+                                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                        <polyline points="17 8 12 3 7 8"></polyline>
+                                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                                    </svg>
+                                </div>
+                                <p class="upload-text">点击或拖拽发票到此处</p>
+                                <p class="upload-hint">支持 PDF 格式，可批量上传</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Settings Section -->
+                    <section class="settings-section" id="settingsSection" style="display: none;">
+                        <div class="settings-card">
+                            <h3 class="settings-title">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                                </svg>
+                                查重方式
+                            </h3>
+                            <div class="dedup-mode-options">
+                                <label class="dedup-mode-option">
+                                    <input type="radio" name="dedupMode" value="md5" class="dedup-mode-radio" checked>
+                                    <div class="dedup-mode-card">
+                                        <div class="dedup-mode-icon">
+                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                            </svg>
+                                        </div>
+                                        <div class="dedup-mode-info">
+                                            <span class="dedup-mode-name">MD5文件查重</span>
+                                            <span class="dedup-mode-desc">基于文件MD5值，相同MD5值视为重复</span>
+                                        </div>
+                                    </div>
+                                </label>
+                                <label class="dedup-mode-option">
+                                    <input type="radio" name="dedupMode" value="invoice" class="dedup-mode-radio">
+                                    <div class="dedup-mode-card">
+                                        <div class="dedup-mode-icon">
+                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                                <polyline points="14 2 14 8 20 8"></polyline>
+                                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                                            </svg>
+                                        </div>
+                                        <div class="dedup-mode-info">
+                                            <span class="dedup-mode-name">发票号码查重</span>
+                                            <span class="dedup-mode-desc">提取发票号码，相同号码视为重复</span>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                            <div class="settings-actions">
+                                <button class="btn btn-primary" id="startBtn">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="11" cy="11" r="8"></circle>
+                                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                    </svg>
+                                    开始查重
+                                </button>
+                                <button class="btn btn-text" id="clearBtn">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="3 6 5 6 21 6"></polyline>
+                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                    </svg>
+                                    清空
+                                </button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- File List -->
+                    <section class="file-list-section" id="fileListSection" style="display: none;">
+                        <div class="file-list-header">
+                            <span class="file-count">已选择 <strong id="fileCount">0</strong> 个文件</span>
+                            <button class="btn btn-text" id="addMoreBtn">继续添加</button>
+                        </div>
+                        <ul class="file-items" id="fileItems"></ul>
+                    </section>
+
+                    <!-- Progress Section -->
+                    <section class="progress-section" id="progressSection" style="display: none;">
+                        <div class="progress-card">
+                            <div class="progress-header">
+                                <span class="progress-title">正在查重...</span>
+                                <span class="progress-count" id="progressCount">0/0</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progressFill"></div>
+                            </div>
+                            <p class="progress-current" id="progressCurrent"></p>
+                        </div>
+                    </section>
+
+                    <!-- Empty State -->
+                    <section class="empty-state" id="emptyState">
+                        <div class="empty-icon">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                        </div>
+                        <h3 class="empty-title">暂无文件</h3>
+                        <p class="empty-desc">请上传发票PDF文件进行查重</p>
+                    </section>
+                </div>
+
+                <!-- Right Panel: Results -->
+                <div class="dedup-right">
+                    <section class="results-section" id="resultsSection" style="display: none;">
+                        <div class="results-header">
+                            <h2 class="results-title">查重结果</h2>
+                            <button class="btn btn-primary btn-sm" id="downloadUniqueBtn" style="display: none;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                                下载非重复发票
+                            </button>
+                        </div>
+
+                        <div class="results-stats">
+                            <span class="stat-item">总文件数：<strong id="totalFiles">0</strong></span>
+                            <span class="stat-item stat-warn">重复组数：<strong id="dupGroups">0</strong></span>
+                            <span class="stat-item stat-error">重复文件数：<strong id="dupFiles">0</strong></span>
+                        </div>
+
+                        <!-- No Duplicates -->
+                        <div class="no-dup-card" id="noDupCard" style="display: none;">
+                            <div class="no-dup-icon">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                </svg>
+                            </div>
+                            <h3 class="no-dup-title">未发现重复发票</h3>
+                            <p class="no-dup-desc">所有文件均无重复</p>
+                        </div>
+
+                        <!-- Duplicate Groups -->
+                        <div id="dupGroupsContainer"></div>
+                    </section>
+
+                    <!-- Results Placeholder (when no results yet) -->
+                    <div class="results-placeholder" id="resultsPlaceholder">
+                        <div class="results-placeholder-icon">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                                <circle cx="12" cy="12" r="10" stroke-opacity="0.2"></circle>
+                                <path d="M12 2a10 10 0 0 1 10 10"></path>
+                            </svg>
+                        </div>
+                        <h3 class="results-placeholder-title">查重结果</h3>
+                        <p class="results-placeholder-desc">上传文件并开始查重后，结果将在此显示</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- 公共 Footer -->
+        <div id="footer-container"></div>
+
+        <!-- Toast -->
+        <div class="toast" id="toast" role="alert" aria-live="polite">
+            <span class="toast-message" id="toastMessage"></span>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../static/tools/js/common.js"></script>
+    <script src="../static/components/site-config.js"></script>
+    <script src="../static/components/components.js"></script>
+    <script src="../static/tools/js/dedup.js"></script>
+</body>
+</html>

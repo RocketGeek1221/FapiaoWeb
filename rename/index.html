@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDI0IDEwMjQiPjxwYXRoIGZpbGw9IiM0QjlBRkMiIGQ9Ik03NjggMTAyNEgyNTZDMTEyLjY0IDEwMjQgMCA5MTEuMzYgMCA3NjhWMjU2QzAgMTEyLjY0IDExMi42NCAwIDI1NiAwaDUxMmMxNDMuMzYgMCAyNTYgMTEyLjY0IDI1NiAyNTZ2NTEyYzAgMTQzLjM2LTExMi42NCAyNTYtMjU2IDI1Nm0xMDIuNC03NjhjMC01Ni4zMi00Ni4wOC0xMDIuNC0xMDIuNC0xMDIuNEgyNTZjLTU2LjMyIDAtMTAyLjQgNDYuMDgtMTAyLjQgMTAyLjR2NjE0LjRMMjUwLjg4IDc2OGw0Ni4wOCAxMDIuNEwzOTQuMjQgNzY4bDQ2LjA4IDEwMi40TDUzNy42IDc2OGw0Ni4wOCAxMDIuNEw2ODAuOTYgNzY4bDQ2LjA4IDEwMi40TDgyNC4zMiA3NjhsNDYuMDggMTAyLjR6bS0xMjggMjA0LjhIMjgxLjZjLTE1LjM2IDAtMjUuNi0xMC4yNC0yNS42LTI1LjZzMTAuMjQtMjUuNiAyNS42LTI1LjZoNDYwLjhjMTUuMzYgMCAyNS42IDEwLjI0IDI1LjYgMjUuNnMtMTAuMjQgMjUuNi0yNS42IDI1LjZtMC0xNTMuNkgyODEuNmMtMTUuMzYgMC0yNS42LTEwLjI0LTI1LjYtMjUuNnMxMC4yNC0yNS42IDI1LjYtMjUuNmg0NjAuOGMxNS4zNiAwIDI1LjYgMTAuMjQgMjUuNiAyNS42cy0xMC4yNCAyNS42LTI1LjYgMjUuNiIvPjwvc3ZnPg==">
+    <title>发票批量重命名工具 - 在线PDF发票重命名</title>
+    <meta name="description" content="免费的在线PDF电子发票批量重命名工具，智能识别发票信息，支持自定义命名规则">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- PDF.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    
+    <!-- JSZip for batch download -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="../static/tools/css/rename.css">
+    <link rel="stylesheet" href="../static/components/common.css">
+</head>
+<body>
+    <div class="app">
+        <!-- 公共 Header -->
+        <div id="header-container"></div>
+        <script>
+            (function() {
+                try {
+                    const cachedHeader = sessionStorage.getItem('shared-component-cache:components/header.html');
+                    const container = document.getElementById('header-container');
+                    if (cachedHeader && container) {
+                        container.innerHTML = cachedHeader;
+                        container.__componentMarkup = cachedHeader;
+                        container.__componentInitialized = false;
+                    }
+                } catch (error) {}
+            })();
+        </script>
+
+        <!-- Page Title -->
+        <section class="page-title">
+            <div class="container">
+                <h1 class="page-heading">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg>
+                    发票批量重命名工具
+                </h1>
+                <p class="subtitle">智能识别发票信息，批量自定义重命名文件</p>
+            </div>
+        </section>
+
+        <!-- Main Content -->
+        <main class="main">
+            <div class="container">
+                <!-- Upload Section -->
+                <section class="upload-section" id="uploadSection">
+                    <div class="upload-card">
+                        <input 
+                            type="file" 
+                            id="fileInput" 
+                            class="file-input" 
+                            multiple 
+                            accept=".pdf"
+                            aria-label="选择PDF文件"
+                        >
+                        <div class="upload-area" id="uploadArea">
+                            <div class="upload-icon">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="17 8 12 3 7 8"></polyline>
+                                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                                </svg>
+                            </div>
+                            <p class="upload-text">点击或拖拽PDF文件到此处</p>
+                            <p class="upload-hint">支持批量上传多个发票文件</p>
+                        </div>
+                    </div>
+
+                <!-- Rule Section -->
+                <section class="rule-section" id="ruleSection">
+                    <h2 class="section-title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                        重命名规则
+                    </h2>
+                        <div class="rule-card">
+                        <div class="rule-input-wrapper">
+                            <input 
+                                type="text" 
+                                id="ruleInput" 
+                                class="rule-input" 
+                                placeholder="输入命名规则，如: {{销售方名称}}-{{开票日期}}-{{含税金额}}" 
+                                value="{{采购方名称}}-{{含税金额}}"
+                                aria-label="重命名规则"
+                            >
+                        </div>
+
+                        <!-- Quick Rules -->
+                        <div class="quick-rules-title" style="font-size: var(--font-size-sm); font-weight: var(--font-weight-medium); color: var(--color-text-secondary); margin: var(--space-4) 0 var(--space-3);">快速选择规则：</div>
+                        <div class="quick-rules">
+                            <span class="quick-rule" data-rule="{{采购方名称}}-{{含税金额}}">购买方-金额</span>
+                            <span class="quick-rule" data-rule="{{开票日期}}-{{销售方名称}}-{{含税金额}}">日期-销售方-金额</span>
+                            <span class="quick-rule" data-rule="{{采购方名称}}-{{开票日期}}-{{含税金额}}">购买方-日期-金额</span>
+                            <span class="quick-rule" data-rule="{{发票号码}}-{{销售方名称}}-{{含税金额}}">发票号码-销售方-金额</span>
+                            <span class="quick-rule" data-rule="{{发票类型}}-{{开票日期}}-{{销售方名称}}-{{含税金额}}">类型-日期-销售方-金额</span>
+                            <span class="quick-rule" data-rule="{{年}}{{月}}{{日}}-{{销售方名称}}-{{含税金额}}">年月日-销售方-金额</span>
+                        </div>
+
+                        <!-- Placeholders -->
+                        <div class="placeholders-title">占位符说明（点击插入）</div>
+                        <div class="placeholders">
+                            <div class="placeholder-item" data-code="{{采购方名称}}"><span>采购方名称</span></div>
+                            <div class="placeholder-item" data-code="{{采购方税号}}"><span>采购方税号</span></div>
+                            <div class="placeholder-item" data-code="{{销售方名称}}"><span>销售方名称</span></div>
+                            <div class="placeholder-item" data-code="{{销售方税号}}"><span>销售方税号</span></div>
+                            <div class="placeholder-item" data-code="{{不含税金额}}"><span>不含税金额</span></div>
+                            <div class="placeholder-item" data-code="{{发票税额}}"><span>发票税额</span></div>
+                            <div class="placeholder-item" data-code="{{含税金额}}"><span>含税金额</span></div>
+                            <div class="placeholder-item" data-code="{{发票号码}}"><span>发票号码</span></div>
+                            <div class="placeholder-item" data-code="{{开票日期}}"><span>开票日期</span></div>
+                            <div class="placeholder-item" data-code="{{发票类型}}"><span>发票类型</span></div>
+                            <div class="placeholder-item" data-code="{{开票人}}"><span>开票人</span></div>
+                            <div class="placeholder-item" data-code="{{备注}}"><span>备注</span></div>
+                            <div class="placeholder-item" data-code="{{年}}"><span>开票日期年</span></div>
+                            <div class="placeholder-item" data-code="{{月}}"><span>开票日期月</span></div>
+                            <div class="placeholder-item" data-code="{{日}}"><span>开票日期日</span></div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="actions" style="margin-top: var(--space-6); padding-top: var(--space-6); border-top: 1px solid var(--color-border);">
+                            <button class="btn btn-primary" id="parseBtn" disabled>
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                </svg>
+                                开始重命名
+                            </button>
+                            <button class="btn btn-success" id="downloadBtn" disabled>
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                                下载全部
+                            </button>
+                            <button class="btn btn-secondary" id="clearBtn">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                </svg>
+                                清空列表
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Results Section -->
+                <section class="results-section" id="resultsSection">
+                    <div class="results-header">
+                        <h2 class="results-title">重命名预览</h2>
+                    </div>
+                    <div class="table-container">
+                        <table class="results-table" id="resultsTable">
+                            <thead>
+                                <tr>
+                                    <th>原文件名</th>
+                                    <th>新文件名</th>
+                                    <th style="width: 100px; text-align: center;">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="resultsBody"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Empty State -->
+                <section class="empty-state" id="emptyState">
+                </section>
+            </div>
+        </main>
+
+        <!-- 公共 Footer -->
+        <div id="footer-container"></div>
+
+        <!-- Toast -->
+        <div class="toast" id="toast" role="alert" aria-live="polite">
+            <span class="toast-message" id="toastMessage"></span>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../static/tools/js/common.js"></script>
+    <script src="../static/components/site-config.js"></script>
+    <script src="../static/components/components.js"></script>
+    <script src="../static/tools/js/rename.js"></script>
+</body>
+</html>

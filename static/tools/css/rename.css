@@ -1,0 +1,149 @@
+/* ============================================
+   发票批量重命名工具 - 特定样式
+   ============================================ */
+
+/* Rule Section */
+.rule-section {
+    margin-bottom: var(--space-8);
+}
+
+.rule-card {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+}
+
+.rule-input-wrapper {
+    position: relative;
+    margin-bottom: var(--space-4);
+}
+
+.rule-input {
+    width: 100%;
+    padding: var(--space-3) var(--space-4);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-base);
+    font-family: 'Consolas', 'Monaco', monospace;
+    transition: all var(--transition-fast);
+    background-color: var(--color-surface);
+    color: var(--color-text-primary);
+}
+
+.rule-input:focus {
+    outline: none;
+    border-color: var(--color-brand);
+    box-shadow: 0 0 0 3px var(--color-brand-light);
+}
+
+.rule-input::placeholder {
+    color: var(--color-text-tertiary);
+}
+
+/* Quick Rules */
+.quick-rules {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-bottom: var(--space-6);
+}
+
+.quick-rule {
+    padding: var(--space-2) var(--space-3);
+    background-color: var(--color-border-light);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.quick-rule:hover {
+    background-color: var(--color-brand-light);
+    border-color: var(--color-brand);
+    color: var(--color-brand);
+}
+
+/* Preview Box */
+.preview-box {
+    background-color: var(--color-brand-light);
+    border: 1px solid var(--color-brand);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+    margin-top: var(--space-4);
+}
+
+.preview-label {
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-brand);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: var(--space-2);
+}
+
+.preview-name {
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: var(--font-size-base);
+    color: var(--color-text-primary);
+    word-break: break-all;
+}
+
+/* Placeholders */
+.placeholders-title {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-secondary);
+    margin-bottom: var(--space-3);
+}
+
+.placeholders {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: var(--space-2);
+}
+
+.placeholder-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    background-color: var(--color-bg);
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.placeholder-item:hover {
+    background-color: var(--color-brand-light);
+    border-color: var(--color-brand);
+}
+
+.placeholder-item code {
+    background-color: var(--color-brand);
+    color: white;
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-sm);
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
+}
+
+.placeholder-item span {
+    color: var(--color-text-secondary);
+}
+
+.placeholder-item:hover span {
+    color: var(--color-text-primary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .placeholders {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+}

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDI0IDEwMjQiPjxwYXRoIGZpbGw9IiM0QjlBRkMiIGQ9Ik03NjggMTAyNEgyNTZDMTEyLjY0IDEwMjQgMCA5MTEuMzYgMCA3NjhWMjU2QzAgMTEyLjY0IDExMi42NCAwIDI1NiAwaDUxMmMxNDMuMzYgMCAyNTYgMTEyLjY0IDI1NiAyNTZ2NTEyYzAgMTQzLjM2LTExMi42NCAyNTYtMjU2IDI1Nm0xMDIuNC03NjhjMC01Ni4zMi00Ni4wOC0xMDIuNC0xMDIuNC0xMDIuNEgyNTZjLTU2LjMyIDAtMTAyLjQgNDYuMDgtMTAyLjQgMTAyLjR2NjE0LjRMMjUwLjg4IDc2OGw0Ni4wOCAxMDIuNEwzOTQuMjQgNzY4bDQ2LjA4IDEwMi40TDUzNy42IDc2OGw0Ni4wOCAxMDIuNEw2ODAuOTYgNzY4bDQ2LjA4IDEwMi40TDgyNC4zMiA3NjhsNDYuMDggMTAyLjR6bS0xMjggMjA0LjhIMjgxLjZjLTE1LjM2IDAtMjUuNi0xMC4yNC0yNS42LTI1LjZzMTAuMjQtMjUuNiAyNS42LTI1LjZoNDYwLjhjMTUuMzYgMCAyNS42IDEwLjI0IDI1LjYgMjUuNnMtMTAuMjQgMjUuNi0yNS42IDI1LjZtMC0xNTMuNkgyODEuNmMtMTUuMzYgMC0yNS42LTEwLjI0LTI1LjYtMjUuNnMxMC4yNC0yNS42IDI1LjYtMjUuNmg0NjAuOGMxNS4zNiAwIDI1LjYgMTAuMjQgMjUuNiAyNS42cy0xMC4yNCAyNS42LTI1LjYgMjUuNiIvPjwvc3ZnPg==">
+    <title>文件名提取工具 - 批量提取文件名</title>
+    <meta name="description" content="免费的在线文件名提取工具，支持批量提取文件名，可导出为TXT或Excel">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- SheetJS for Excel export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="../static/components/common.css">
+    <link rel="stylesheet" href="../static/tools/css/file-name.css">
+</head>
+<body>
+    <div class="app">
+        <!-- 公共 Header -->
+        <div id="header-container"></div>
+        <script>
+            (function() {
+                try {
+                    const cachedHeader = sessionStorage.getItem('shared-component-cache:components/header.html');
+                    const container = document.getElementById('header-container');
+                    if (cachedHeader && container) {
+                        container.innerHTML = cachedHeader;
+                        container.__componentMarkup = cachedHeader;
+                        container.__componentInitialized = false;
+                    }
+                } catch (error) {}
+            })();
+        </script>
+
+        <!-- Page Title -->
+        <section class="page-title">
+            <div class="container">
+                <h1 class="page-heading">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg>
+                    文件名提取工具
+                </h1>
+                <p class="subtitle">批量提取文件名，支持导出为TXT或Excel</p>
+            </div>
+        </section>
+
+        <!-- Main Content -->
+        <main class="main">
+            <div class="container">
+                <!-- Upload Section -->
+                <section class="upload-section" id="uploadSection">
+                    <div class="upload-card">
+                        <input 
+                            type="file" 
+                            id="fileInput" 
+                            class="file-input" 
+                            multiple 
+                            aria-label="选择文件"
+                        >
+                        <div class="upload-area" id="uploadArea">
+                            <div class="upload-icon">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="17 8 12 3 7 8"></polyline>
+                                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                                </svg>
+                            </div>
+                            <p class="upload-text">点击或拖拽文件到此处</p>
+                            <p class="upload-hint">支持批量上传，提取所有文件名</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Actions Section -->
+                <section class="actions-section" id="actionsSection">
+                    <div class="actions">
+                        <button class="btn btn-secondary" id="settingsBtn">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"></circle>
+                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                            </svg>
+                            提取选项
+                        </button>
+                        <button class="btn btn-success" id="copyBtn" disabled>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                            一键复制
+                        </button>
+                        <button class="btn btn-success" id="downloadTxtBtn" disabled>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            下载TXT
+                        </button>
+                        <button class="btn btn-success" id="downloadExcelBtn" disabled>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            下载Excel
+                        </button>
+                        <button class="btn btn-secondary" id="clearBtn">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="3 6 5 6 21 6"></polyline>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                            </svg>
+                            清空列表
+                        </button>
+                    </div>
+                </section>
+
+                <!-- Results Section -->
+                <section class="results-section" id="resultsSection" style="display: none;">
+                    <div class="results-header">
+                        <h2 class="results-title">提取结果</h2>
+                        <div class="results-stats">
+                            <span class="stat-item">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
+                                    <polyline points="13 2 13 9 20 9"></polyline>
+                                </svg>
+                                总文件数：<strong id="totalFiles">0</strong>
+                            </span>
+                            <span class="stat-item">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                                </svg>
+                                文件名：<strong id="uniqueNames">0</strong>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table class="results-table" id="resultsTable">
+                            <thead>
+                                <tr>
+                                    <th style="width: 60px;">序号</th>
+                                    <th>文件名</th>
+                                    <th style="width: 100px;">文件类型</th>
+                                    <th style="width: 120px;">文件大小</th>
+                                    <th style="width: 60px;">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="resultsBody"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Empty State -->
+                <section class="empty-state" id="emptyState">
+                    <div class="empty-icon">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
+                            <polyline points="13 2 13 9 20 9"></polyline>
+                        </svg>
+                    </div>
+                    <h3 class="empty-title">暂无文件</h3>
+                    <p class="empty-desc">请上传文件以提取文件名</p>
+                </section>
+            </div>
+        </main>
+
+        <!-- 公共 Footer -->
+        <div id="footer-container"></div>
+
+        <!-- Toast -->
+        <div class="toast" id="toast" role="alert" aria-live="polite">
+            <span class="toast-message" id="toastMessage"></span>
+        </div>
+
+        <!-- Settings Modal -->
+        <div class="modal" id="settingsModal">
+            <div class="modal-overlay" id="modalOverlay"></div>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                        </svg>
+                        提取选项
+                    </h3>
+                    <button class="modal-close" id="modalClose" aria-label="关闭">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="option-group">
+                        <label class="option-label">
+                            <input type="checkbox" id="removeExtension" checked>
+                            <span>移除文件扩展名</span>
+                        </label>
+                        <p class="option-hint">勾选后只提取文件名，不包含扩展名（如：example.pdf → example）</p>
+                    </div>
+
+                    <div class="option-group">
+                        <label class="option-label">
+                            <input type="checkbox" id="removeDuplicates">
+                            <span>移除重复文件名</span>
+                        </label>
+                        <p class="option-hint">勾选后自动去重，只保留唯一的文件名</p>
+                    </div>
+
+                    <div class="option-group">
+                        <label class="option-label">
+                            <input type="checkbox" id="sortNames">
+                            <span>按字母排序</span>
+                        </label>
+                        <p class="option-hint">勾选后文件名按字母顺序排列</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="modalCancel">取消</button>
+                    <button class="btn btn-primary" id="modalConfirm">确定</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../static/tools/js/common.js"></script>
+    <script src="../static/components/site-config.js"></script>
+    <script src="../static/components/components.js"></script>
+    <script src="../static/tools/js/file-name.js"></script>
+</body>
+</html>

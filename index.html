@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDI0IDEwMjQiPjxwYXRoIGZpbGw9IiM0QjlBRkMiIGQ9Ik03NjggMTAyNEgyNTZDMTEyLjY0IDEwMjQgMCA5MTEuMzYgMCA3NjhWMjU2QzAgMTEyLjY0IDExMi42NCAwIDI1NiAwaDUxMmMxNDMuMzYgMCAyNTYgMTEyLjY0IDI1NiAyNTZ2NTEyYzAgMTQzLjM2LTExMi42NCAyNTYtMjU2IDI1Nm0xMDIuNC03NjhjMC01Ni4zMi00Ni4wOC0xMDIuNC0xMDIuNC0xMDIuNEgyNTZjLTU2LjMyIDAtMTAyLjQgNDYuMDgtMTAyLjQgMTAyLjR2NjE0LjRMMjUwLjg4IDc2OGw0Ni4wOCAxMDIuNEwzOTQuMjQgNzY4bDQ2LjA4IDEwMi40TDUzNy42IDc2OGw0Ni4wOCAxMDIuNEw2ODAuOTYgNzY4bDQ2LjA4IDEwMi40TDgyNC4zMiA3NjhsNDYuMDggMTAyLjR6bS0xMjggMjA0LjhIMjgxLjZjLTE1LjM2IDAtMjUuNi0xMC4yNC0yNS42LTI1LjZzMTAuMjQtMjUuNiAyNS42LTI1LjZoNDYwLjhjMTUuMzYgMCAyNS42IDEwLjI0IDI1LjYgMjUuNnMtMTAuMjQgMjUuNi0yNS42IDI1LjZtMC0xNTMuNkgyODEuNmMtMTUuMzYgMC0yNS42LTEwLjI0LTI1LjYtMjUuNnMxMC4yNC0yNS42IDI1LjYtMjUuNmg0NjAuOGMxNS4zNiAwIDI1LjYgMTAuMjQgMjUuNiAyNS42cy0xMC4yNCAyNS42LTI1LjYgMjUuNiIvPjwvc3ZnPg==">
+    <title>发票工具箱</title>
+    <meta name="description" content="发票批量处理工具集：提取、重命名、格式转换">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="static/components/common.css">
+    <style>
+        /* 首页特定样式 */
+        .hero {
+            padding: var(--space-16) 0 var(--space-12);
+            text-align: center;
+        }
+        
+        .hero-title {
+            font-size: 2.5rem;
+            font-weight: var(--font-weight-semibold);
+            color: var(--color-text-primary);
+            margin-bottom: var(--space-4);
+        }
+        
+        .hero-desc {
+            font-size: var(--font-size-lg);
+            color: var(--color-text-secondary);
+            max-width: 500px;
+            margin: 0 auto var(--space-12);
+        }
+        
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--space-8);
+            padding-bottom: var(--space-16);
+        }
+        
+        .tool-card {
+            background-color: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-xl);
+            padding: var(--space-8);
+            text-decoration: none;
+            color: inherit;
+            transition: all var(--transition-normal);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        
+        .tool-card:hover {
+            border-color: var(--color-brand);
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-4px);
+        }
+        
+        .tool-icon {
+            width: 64px;
+            height: 64px;
+            background-color: var(--color-brand-light);
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: var(--space-6);
+            color: var(--color-brand);
+            transition: all var(--transition-fast);
+        }
+        
+        .tool-card:hover .tool-icon {
+            background-color: var(--color-brand);
+            color: white;
+        }
+        
+        .tool-name {
+            font-size: var(--font-size-xl);
+            font-weight: var(--font-weight-semibold);
+            color: var(--color-text-primary);
+            margin-bottom: var(--space-3);
+        }
+        
+        .tool-desc {
+            font-size: var(--font-size-sm);
+            color: var(--color-text-secondary);
+            line-height: var(--line-height-relaxed);
+            margin-bottom: var(--space-6);
+        }
+        
+        .tool-arrow {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-2);
+            color: var(--color-brand);
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
+            margin-top: auto;
+        }
+        
+        .tool-arrow svg {
+            transition: transform var(--transition-fast);
+        }
+        
+        .tool-card:hover .tool-arrow svg {
+            transform: translateX(4px);
+        }
+        
+        .features {
+            background-color: var(--color-surface);
+            border-top: 1px solid var(--color-border);
+            padding: var(--space-12) 0;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--space-8);
+            text-align: center;
+        }
+        
+        .feature-item {
+            padding: var(--space-4);
+        }
+        
+        .feature-icon {
+            color: var(--color-brand);
+            margin-bottom: var(--space-3);
+        }
+        
+        .feature-title {
+            font-size: var(--font-size-base);
+            font-weight: var(--font-weight-semibold);
+            color: var(--color-text-primary);
+            margin-bottom: var(--space-2);
+        }
+        
+        .feature-desc {
+            font-size: var(--font-size-sm);
+            color: var(--color-text-secondary);
+        }
+        
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 1.75rem;
+            }
+            
+            .hero {
+                padding: var(--space-10) 0 var(--space-8);
+            }
+            
+            .tools-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <!-- 公共 Header -->
+        <div id="header-container"></div>
+        <script>
+            (function() {
+                try {
+                    const cachedHeader = sessionStorage.getItem('shared-component-cache:components/header.html');
+                    const container = document.getElementById('header-container');
+                    if (cachedHeader && container) {
+                        container.innerHTML = cachedHeader;
+                        container.__componentMarkup = cachedHeader;
+                        container.__componentInitialized = false;
+                    }
+                } catch (error) {}
+            })();
+        </script>
+
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="container">
+                <h1 class="hero-title" id="homeHeroTitle">发票工具箱</h1>
+                <p class="hero-desc" id="homeHeroDesc">批量处理发票文件，提取信息、智能重命名、格式转换，一站式解决</p>
+            </div>
+        </section>
+
+        <!-- Tools Section -->
+        <main class="main">
+            <div class="container">
+                <div class="tools-grid" id="homeToolsGrid"></div>
+            </div>
+        </main>
+
+
+        <!-- 公共 Footer -->
+        <div id="footer-container"></div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="static/components/site-config.js"></script>
+    <script src="static/components/components.js"></script>
+</body>
+</html>
