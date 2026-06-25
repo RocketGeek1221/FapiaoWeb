@@ -739,7 +739,7 @@
                 const item = subtotalItems[i];
                 const nextItem = subtotalItems[i + 1];
                 // ¥符号后面紧跟数字
-                if ((item.text === '¥' || item.text === '￥') && /^\d+\.\d{2}$/.test(nextItem.text)) {
+                if ((item.text === '¥' || item.text === '￥') && /^[-]?\d+\.\d{2}$/.test(nextItem.text)) {
                     amounts.push(nextItem.text);
                 }
             }
@@ -767,12 +767,12 @@
                             const actualGap = rItem.x - lastX;
                             const shouldMerge = mergedAmount === '' || actualGap < Math.max(xGapThreshold, expectedGap);
 
-                            // 数字、小数点或短数字片段（如 "21.", "96", "2.", "8"）
-                            if (shouldMerge && /^[\d.]+$/.test(cleanText)) {
+                            // 数字、小数点或短数字片段（如 "21.", "96", "2.", "8", "-208."）
+                            if (shouldMerge && /^[-]?\d*[.]?\d*$/.test(cleanText)) {
                                 mergedAmount += cleanText;
                                 lastX = rItem.x;
                                 lastWidth = rItem.w;
-                            } else if (/^\d+\.\d{2}$/.test(cleanText)) {
+                            } else if (/^[-]?\d+\.\d{2}$/.test(cleanText)) {
                                 mergedAmount = cleanText;
                                 break;
                             } else {
@@ -781,13 +781,13 @@
                         }
 
                         // 验证并格式化金额（确保有两位小数）
-                        if (/^\d+\.\d{1,2}$/.test(mergedAmount)) {
+                        if (/^[-]?\d+\.\d{1,2}$/.test(mergedAmount)) {
                             // 如果只有一位小数，补零
                             if (mergedAmount.match(/\.\d$/)) {
                                 mergedAmount += '0';
                             }
                             amounts.push(mergedAmount);
-                        } else if (/^\d+$/.test(mergedAmount)) {
+                        } else if (/^[-]?\d+$/.test(mergedAmount)) {
                             // 没有小数点，尝试解析为整数金额（如 286 表示 2.86）
                             if (mergedAmount.length >= 3) {
                                 const formatted = mergedAmount.slice(0, -2) + '.' + mergedAmount.slice(-2);
@@ -841,7 +841,7 @@
             // 尝试标准模式：¥符号后紧跟完整金额
             for (let i = 0; i < rightItems.length - 1; i++) {
                 if ((rightItems[i].text === '¥' || rightItems[i].text === '￥') &&
-                    /^\d+\.\d{2}$/.test(rightItems[i + 1].text)) {
+                    /^[-]?\d+\.\d{2}$/.test(rightItems[i + 1].text)) {
                     result.totalAmount = rightItems[i + 1].text;
                     break;
                 }
@@ -870,12 +870,12 @@
                             const actualGap = aItem.x - lastX;
                             const shouldMerge = mergedAmount === '' || actualGap < Math.max(xGapThreshold, expectedGap);
 
-                            // 数字、小数点或短数字片段
-                            if (shouldMerge && /^[\d.]+$/.test(cleanText)) {
+                            // 数字、小数点或短数字片段（如 "21.", "96", "2.", "8", "-208."）
+                            if (shouldMerge && /^[-]?\d*[.]?\d*$/.test(cleanText)) {
                                 mergedAmount += cleanText;
                                 lastX = aItem.x;
                                 lastWidth = aItem.w;
-                            } else if (/^\d+\.\d{2}$/.test(cleanText)) {
+                            } else if (/^[-]?\d+\.\d{2}$/.test(cleanText)) {
                                 mergedAmount = cleanText;
                                 break;
                             } else {
@@ -884,14 +884,14 @@
                         }
 
                         // 验证并格式化金额（确保有两位小数）
-                        if (/^\d+\.\d{1,2}$/.test(mergedAmount)) {
+                        if (/^[-]?\d+\.\d{1,2}$/.test(mergedAmount)) {
                             // 如果只有一位小数，补零
                             if (mergedAmount.match(/\.\d$/)) {
                                 mergedAmount += '0';
                             }
                             result.totalAmount = mergedAmount;
                             break;
-                        } else if (/^\d+$/.test(mergedAmount)) {
+                        } else if (/^[-]?\d+$/.test(mergedAmount)) {
                             // 没有小数点，尝试解析为整数金额（如 286 表示 2.86）
                             if (mergedAmount.length >= 3) {
                                 const formatted = mergedAmount.slice(0, -2) + '.' + mergedAmount.slice(-2);
